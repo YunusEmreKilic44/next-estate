@@ -5,6 +5,10 @@ import { useState } from "react";
 import Input from "../ui/Input";
 import Button from "../ui/Button";
 import { FcGoogle } from "react-icons/fc";
+import toast from "react-hot-toast";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import { signInWithGoogle } from "@/services/signInWithGoogle";
 
 interface RegisterValues {
   name: string;
@@ -16,6 +20,8 @@ type RegisterErrors = Partial<Record<keyof RegisterValues, string>>;
 
 const RegisterModal = () => {
   const { openLogin, isRegisterOpen, closeRegister } = useAuthModal();
+
+  const router = useRouter();
 
   const [values, setValues] = useState<RegisterValues>({
     name: "",
@@ -62,6 +68,40 @@ const RegisterModal = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+  const onSubmit = async (e: React.SubmitEvent) => {
+    e.preventDefault();
+
+    if (!validate()) return;
+
+    try {
+      setLoading(true);
+
+      const { error } = await authClient.signUp.email({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+      });
+
+      if (error) {
+        toast.error(error.message as string);
+        return;
+      }
+
+      toast.success("Registration successfull");
+      router.refresh();
+
+      setValues({ name: "", email: "", password: "" });
+      closeRegister();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Modal title="Register" onClose={closeRegister} isOpen={isRegisterOpen}>
       {/* header */}
@@ -72,7 +112,7 @@ const RegisterModal = () => {
         <p className="text-sm text-gray-500">Create an account</p>
       </div>
 
-      <form className="space-y-8">
+      <form onSubmit={onSubmit} className="space-y-8">
         <Input
           id="login-name"
           onChange={handleChange}
@@ -118,6 +158,7 @@ const RegisterModal = () => {
       </div>
 
       <Button
+        onClick={signInWithGoogle}
         variant="outline"
         fullWidth
         disabled={loading}

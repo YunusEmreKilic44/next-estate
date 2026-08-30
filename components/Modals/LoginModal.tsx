@@ -5,6 +5,10 @@ import { useState } from "react";
 import Input from "../ui/Input";
 import Button from "../ui/Button";
 import { FcGoogle } from "react-icons/fc";
+import { authClient } from "@/lib/auth-client";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import { signInWithGoogle } from "@/services/signInWithGoogle";
 
 interface LoginValues {
   email: string;
@@ -14,6 +18,7 @@ interface LoginValues {
 type LoginErrors = Partial<Record<keyof LoginValues, string>>;
 
 const LoginModal = () => {
+  const router = useRouter();
   const { openRegister, isLoginOpen, closeLogin } = useAuthModal();
   const [values, setValues] = useState<LoginValues>({
     email: "",
@@ -52,6 +57,38 @@ const LoginModal = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const onSubmit = async (e: React.SubmitEvent) => {
+    e.preventDefault();
+
+    if (!validate()) return;
+
+    try {
+      setLoading(true);
+
+      const { error } = await authClient.signIn.email({
+        email: values.email,
+        password: values.password,
+      });
+
+      if (error) {
+        toast.error(error.message as string);
+        return;
+      }
+
+      toast.success("Login successfull");
+      router.refresh();
+
+      setValues({ email: "", password: "" });
+      closeLogin();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Modal title="Login" onClose={closeLogin} isOpen={isLoginOpen}>
       {/* header */}
@@ -60,7 +97,7 @@ const LoginModal = () => {
         <p className="text-sm text-gray-500">Login to your accent</p>
       </div>
 
-      <form className="space-y-8">
+      <form onSubmit={onSubmit} className="space-y-8">
         <Input
           id="login-email"
           onChange={handleChange}
@@ -97,6 +134,7 @@ const LoginModal = () => {
       </div>
 
       <Button
+        onClick={signInWithGoogle}
         variant="outline"
         fullWidth
         disabled={loading}

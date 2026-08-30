@@ -5,6 +5,7 @@ import RegisterModal from "@/components/Modals/RegisterModal";
 import LoginModal from "@/components/Modals/LoginModal";
 import CreatePropertyModal from "@/components/Modals/CreatePropertyModal";
 import FilterModal from "@/components/Modals/FilterModal";
+import { Toaster } from "react-hot-toast";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <LoginModal />
         <CreatePropertyModal />
         <FilterModal />
+        <Toaster />
       </body>
     </html>
   );
