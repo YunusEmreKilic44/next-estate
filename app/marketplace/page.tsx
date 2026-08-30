@@ -1,10 +1,9 @@
 import FrontendLayout from "@/components/layouts/FrontendLayout";
+import FilterButton from "@/components/Marketplace/FilterButton";
 import Navbar from "@/components/Navbar/Navbar";
 import PropertyCard from "@/components/Properties/PropertyCard";
-import Button from "@/components/ui/Button";
 import { dummyProperties } from "@/constants/dummyProperties";
 import React from "react";
-import { HiOutlineAdjustmentsHorizontal } from "react-icons/hi2";
 
 const MarketPlace = () => {
   return (
@@ -15,12 +14,7 @@ const MarketPlace = () => {
         <div className="flex justify-between">
           <h2 className="text-2xl font-bold text-text md:text-3xl">Explore</h2>
 
-          <Button
-            variant="outline"
-            icon={<HiOutlineAdjustmentsHorizontal size={20} />}
-          >
-            Filter
-          </Button>
+          <FilterButton />
         </div>
         <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3 my-4">
           {dummyProperties.map((property) => (
