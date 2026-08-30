@@ -6,6 +6,7 @@ import { propertyTypes } from "@/constants/PropertyTypes";
 import PropertyTypeCard from "../Properties/PropertyTypeCard";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
+import { useRouter } from "next/navigation";
 
 const STEPS = {
   TYPE: 0,
@@ -21,6 +22,7 @@ const FilterModal = () => {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const { close, isOpen } = useFilterModalStore();
+  const router = useRouter();
 
   const stepTitle = () => {
     switch (step) {
@@ -36,7 +38,18 @@ const FilterModal = () => {
     }
   };
 
-  const applyFilter = () => {};
+  const applyFilter = () => {
+    const params = new URLSearchParams();
+
+    if (propertyType) params.set("propertyType", propertyType);
+    if (location) params.set("location", location);
+    if (address) params.set("address", address);
+    if (minPrice) params.set("minPrice", minPrice);
+    if (maxPrice) params.set("maxPrice", maxPrice);
+
+    router.push(`/marketplace?${params.toString()}`);
+    close();
+  };
 
   return (
     <Modal title="Filter Properties" onClose={close} isOpen={isOpen}>
