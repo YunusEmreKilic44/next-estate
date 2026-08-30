@@ -8,6 +8,9 @@ import PropertyTypeCard from "../Properties/PropertyTypeCard";
 import Input from "../ui/Input";
 import Counter from "../Properties/Counter";
 import ImageUpload from "../Properties/ImageUpload";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 const STEPS = {
   TYPE: 0,
@@ -21,6 +24,7 @@ const STEPS = {
 const CreatePropertyModal = () => {
   const [step, setStep] = useState(STEPS.TYPE);
   const { isOpen, close } = useCreatePropertyModalStore();
+  const router = useRouter();
 
   const stepTitle = () => {
     switch (step) {
@@ -60,10 +64,65 @@ const CreatePropertyModal = () => {
     setPreview(URL.createObjectURL(file));
   };
 
-  const createListing = async () => {};
+  const handleClose = () => {
+    setStep(STEPS.TYPE);
+    setPropertyType("");
+    setLocation("");
+    setAddress("");
+    setBedrooms(1);
+    setBathrooms(1);
+    setParkingSpaces(0);
+    setArea("");
+    setTitle("");
+    setDescription("");
+    setImage(null);
+    setPreview(null);
+    setPrice("");
+    close();
+  };
+
+  const createListing = async () => {
+    try {
+      setLoading(true);
+
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("price", price);
+      formData.append("location", location);
+      formData.append("address", address);
+      formData.append("area", area);
+      formData.append("propertyType", propertyType);
+      formData.append("listingType", listingType);
+      formData.append("bedrooms", String(bedrooms));
+      formData.append("bathrooms", String(bathrooms));
+      formData.append("parkingSpaces", String(parkingSpaces));
+
+      if (image) {
+        formData.append("image", image);
+      }
+
+      await axios.post("/api/properties", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      toast.success("Property created successfully");
+      router.replace("/properties");
+      handleClose();
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data.error || "Something went wrong");
+        return;
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <Modal onClose={close} isOpen={isOpen} title="Create a new listing">
+    <Modal onClose={handleClose} isOpen={isOpen} title="Create a new listing">
       <div className="mb-6 flex items-center justify-between text-sm text-gray-500">
         <span>Step {step + 1} of 6</span>
         <span className="font-medium text-gray-700">{stepTitle()}</span>
@@ -149,6 +208,7 @@ const CreatePropertyModal = () => {
               }
             />
             <Input
+              as="textarea"
               name="description"
               label="Property Description"
               value={description}
